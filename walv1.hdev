@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.1" halcon_version="13.0">
+<procedure name="main">
+<interface/>
+<body>
+<c></c>
+<l>dev_close_window ()</l>
+<l>dev_update_off ()</l>
+<l>read_image (Image, 'C:/Users/LENOVO/Desktop/wal/wal2.png')</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<l>dev_set_line_width (2)</l>
+<l>dev_set_draw ('margin')</l>
+<c> </c>
+<l>* set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<c>*zawężenie</c>
+<l>threshold (Image, Region, 128, 255)</l>
+<c>*connection (Region, ConnectedRegions) *usuniecie zbednych zakłócen i małych obiektów</c>
+<l>smallest_rectangle1 (Region, Row11, Column11, Row21, Column21)</l>
+<l>gen_rectangle1 (Rectangle, Row11-10, Column11-10, Row21+10, Column21+10)</l>
+<l>reduce_domain (Image, Rectangle, ImageReduced1)</l>
+<l>edges_image (ImageReduced1, ImaAmp, ImaDir, 'canny', 1, 'nms', 20, 40)</l>
+<c>*region info</c>
+<l>region_features (Rectangle, 'width', dl_pret)</l>
+<l>region_features (Rectangle, 'height', grub_max)</l>
+<c>*krawedzie boczne</c>
+<l>threshold (ImaDir, lewo, 120, 170)</l>
+<l>threshold (ImaDir, prawo, 30, 60)</l>
+<l>threshold (ImaDir, gora, 80, 100)</l>
+<l>threshold (ImaDir, dol1, 0, 20)</l>
+<l>threshold (ImaDir, dol2, 170, 180)</l>
+<l>union2 (dol2, dol1, dol)</l>
+<c> *</c>
+<c></c>
+<c></c>
+<c>* Determine the fill level</c>
+<l>Num := 10</l>
+<l>proc_odciety_lewa := 0.1</l>
+<l>proc_odciety_prawa := 0.4</l>
+<l>proc_odciety := proc_odciety_lewa+proc_odciety_prawa</l>
+<l>Row1 := Row11-10</l>
+<l>Row2 := Row21+10</l>
+<c></c>
+<l>for i := 0 to Num-1 by 1</l>
+<c>    </c>
+<l>    Column1 := Column11+dl_pret*(proc_odciety_lewa) + ( i * (dl_pret*(1-proc_odciety))/Num )</l>
+<c>    </c>
+<l>    Column2 := Column11+dl_pret*(proc_odciety_lewa) + ( (i+1) * (dl_pret*(1-proc_odciety))/Num )</l>
+<l>    gen_rectangle1 (SearchROI, Row1, Column1, Row2, Column2)</l>
+<l>      dev_set_color ('blue')</l>
+<l>    dev_display (SearchROI)</l>
+<l>    reduce_domain (Image, SearchROI, ImageReduced)</l>
+<l>    edges_sub_pix (ImageReduced, Edges, 'canny', 1, 20, 40)</l>
+<l>    *select_shape_xld (Edges, Wyb, 'contlength', 'and', 1, 350)</l>
+<l>      dev_set_color ('orange')</l>
+<l>    dev_display (Edges)</l>
+<c>   </c>
+<l>    *for j := 1 to 2 by 1</l>
+<c></c>
+<l>      fit_line_contour_xld (Edges, 'tukey', -1, 0, 5, 2, RowBegin, ColBegin, RowEnd, ColEnd, Nr, Nc, Dist)</l>
+<l>     * y1:=  RowBegin[j]</l>
+<l>    *  x1:=   ColBegin[j]</l>
+<l>     * y2:=   RowEnd[j]</l>
+<l>    *  x2:=   ColEnd[j]</l>
+<l>   *segment_contours_xld (Wyb, ContoursSplit, 'lines', 0, 4, 2)</l>
+<l>        *gen_contour_polygon_xld (Contour, RowBegin[1], ColBegin[1])</l>
+<l>        dev_set_color ('red')</l>
+<l>       dev_set_line_width (2)  </l>
+<l>        disp_line (WindowHandle, RowBegin, ColBegin, RowEnd, ColEnd)</l>
+<l>        select_obj (Edges, Wyb1, 1)</l>
+<l>        select_obj (Edges, Wyb2, 2)</l>
+<c>        </c>
+<l>        distance_cc (Wyb1, Wyb2, 'point_to_point', DistanceMin, DistanceMax)</l>
+<c></c>
+<c></c>
+<l>    *endfor</l>
+<l>endfor</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
