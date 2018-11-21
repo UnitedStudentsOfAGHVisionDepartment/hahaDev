@@ -3,10 +3,10 @@
 <procedure name="main">
 <interface/>
 <body>
-<c></c>
+<l>count_seconds (Seconds)</l>
 <l>dev_close_window ()</l>
 <l>dev_update_off ()</l>
-<l>read_image (Image, 'C:/Users/LENOVO/Desktop/wal/wal2.png')</l>
+<l>read_image (Image, 'C:/Users/LENOVO/Documents/GitHub/hahaDev/wal2.png')</l>
 <l>get_image_size (Image, Width, Height)</l>
 <l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
 <l>dev_display (Image)</l>
@@ -31,14 +31,21 @@
 <l>threshold (ImaDir, dol1, 0, 20)</l>
 <l>threshold (ImaDir, dol2, 170, 180)</l>
 <l>union2 (dol2, dol1, dol)</l>
+<c></c>
+<l>concat_obj(gora, dol, poziom)</l>
 <c> *</c>
 <c></c>
 <c></c>
 <c>* Determine the fill level</c>
-<l>Num := 10</l>
-<l>proc_odciety_lewa := 0.1</l>
-<l>proc_odciety_prawa := 0.4</l>
+<l>Num := 100</l>
+<l>proc_odciety_lewa := 0.01</l>
+<l>proc_odciety_prawa := 0.06</l>
 <l>proc_odciety := proc_odciety_lewa+proc_odciety_prawa</l>
+<c></c>
+<l>if (proc_odciety &gt;=0.95) </l>
+<c>    *wywal bleda jarkowi</c>
+<l>endif</l>
+<c></c>
 <l>Row1 := Row11-10</l>
 <l>Row2 := Row21+10</l>
 <c></c>
@@ -48,17 +55,18 @@
 <c>    </c>
 <l>    Column2 := Column11+dl_pret*(proc_odciety_lewa) + ( (i+1) * (dl_pret*(1-proc_odciety))/Num )</l>
 <l>    gen_rectangle1 (SearchROI, Row1, Column1, Row2, Column2)</l>
-<l>      dev_set_color ('blue')</l>
+<l>    dev_set_color ('blue')</l>
 <l>    dev_display (SearchROI)</l>
-<l>    reduce_domain (Image, SearchROI, ImageReduced)</l>
-<l>    edges_sub_pix (ImageReduced, Edges, 'canny', 1, 20, 40)</l>
+<l>    intersection (SearchROI, poziom, Edge)</l>
+<l>    gen_contour_region_xld (Edge, Edges, 'border')</l>
 <l>    *select_shape_xld (Edges, Wyb, 'contlength', 'and', 1, 350)</l>
 <l>      dev_set_color ('orange')</l>
 <l>    dev_display (Edges)</l>
 <c>   </c>
 <l>    *for j := 1 to 2 by 1</l>
-<c></c>
-<l>      fit_line_contour_xld (Edges, 'tukey', -1, 0, 5, 2, RowBegin, ColBegin, RowEnd, ColEnd, Nr, Nc, Dist)</l>
+<c>         </c>
+<l>    *split_skeleton_lines (Edges, 3, BeginRow, BeginCol, EndRow, EndCol)</l>
+<l>     * fit_line_contour_xld (Edges, 'tukey', -1, 0, 5, 2, RowBegin, ColBegin, RowEnd, ColEnd, Nr, Nc, Dist)</l>
 <l>     * y1:=  RowBegin[j]</l>
 <l>    *  x1:=   ColBegin[j]</l>
 <l>     * y2:=   RowEnd[j]</l>
@@ -67,15 +75,17 @@
 <l>        *gen_contour_polygon_xld (Contour, RowBegin[1], ColBegin[1])</l>
 <l>        dev_set_color ('red')</l>
 <l>       dev_set_line_width (2)  </l>
-<l>        disp_line (WindowHandle, RowBegin, ColBegin, RowEnd, ColEnd)</l>
+<l>        *disp_line (WindowHandle, BeginRow, BeginCol, EndRow, EndCol)</l>
 <l>        select_obj (Edges, Wyb1, 1)</l>
 <l>        select_obj (Edges, Wyb2, 2)</l>
 <c>        </c>
-<l>        distance_cc (Wyb1, Wyb2, 'point_to_point', DistanceMin, DistanceMax)</l>
-<c></c>
+<l>     distance_cc_min (Wyb2, Wyb2, 'fast_point_to_segment', DistanceMin)</l>
+<c>     </c>
 <c></c>
 <l>    *endfor</l>
 <l>endfor</l>
+<l>count_seconds (Seconds1)</l>
+<l>XXXXXXX := Seconds1 - Seconds</l>
 </body>
 <docu id="main">
 <parameters/>
