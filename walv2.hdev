@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.1" halcon_version="13.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>    count_seconds (Seconds)</l>
+<l>    dev_close_window ()</l>
+<l>    dev_update_off ()</l>
+<l>    read_image (Image, 'C:/Users/LENOVO/Documents/GitHub/hahaDev/wal3.png')</l>
+<l>    get_image_size (Image, Width, Height)</l>
+<l>    dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>    dev_display (Image)</l>
+<l>    dev_set_line_width (2)</l>
+<l>    dev_set_draw ('margin')</l>
+<c> </c>
+<l>* set_display_font (WindowHandle, 16, 'mono', 'true', 'false')</l>
+<c>*zawężenie</c>
+<l>    threshold (Image, Region, 128, 255)</l>
+<c>    *connection (Region, ConnectedRegions) *usuniecie zbednych zakłócen i małych obiektów</c>
+<l>    smallest_rectangle1 (Region, Row11, Column11, Row21, Column21)</l>
+<l>    gen_rectangle1 (Rectangle, Row11-10, Column11-10, Row21+10, Column21+10)</l>
+<l>    reduce_domain (Image, Rectangle, ImageReduced1)</l>
+<l>    edges_image (ImageReduced1, ImaAmp, ImaDir, 'canny', 1, 'nms', 20, 40)</l>
+<c>    *region info</c>
+<l>    region_features (Rectangle, 'width', dl_pret)</l>
+<l>    region_features (Rectangle, 'height', grub_max)</l>
+<c>*krawedzie boczne</c>
+<l>    threshold (ImaDir, lewo, 120, 150)</l>
+<l>    threshold (ImaDir, prawo, 30, 60)</l>
+<l>    threshold (ImaDir, gora, 80, 100)</l>
+<l>    threshold (ImaDir, dol1, 0, 20)</l>
+<l>    threshold (ImaDir, dol2, 170, 180)</l>
+<l>    union2 (dol2, dol1, dol)</l>
+<c>    </c>
+<l>    concat_obj(gora, dol, poziom)</l>
+<c> *</c>
+<c></c>
+<c></c>
+<l>    Dystanse :=0</l>
+<l>    Num := 10</l>
+<l>    proc_odciety_lewa := 0.01</l>
+<l>    proc_odciety_prawa := 0.06</l>
+<l>    proc_odciety := proc_odciety_lewa+proc_odciety_prawa</l>
+<c></c>
+<l>if (proc_odciety &gt;=0.95) </l>
+<c>    *wywal bleda jarkowi</c>
+<c>    *za duzo</c>
+<l>endif</l>
+<l>if (proc_odciety &gt;=0.1) </l>
+<c>    *wywal bleda jarkowi</c>
+<c>    *za malo ?!!?</c>
+<l>endif    </l>
+<l>    Row1 := Row11-10</l>
+<l>    Row2 := Row21+10</l>
+<c></c>
+<l>for i := 0 to Num-1 by 1</l>
+<c>    *ROI rowlolegle do osi ukladu wspolrzednych</c>
+<l>    Column1 := Column11+dl_pret*(proc_odciety_lewa) + ( i * (dl_pret*(1-proc_odciety))/Num )</l>
+<l>    Column2 := Column11+dl_pret*(proc_odciety_lewa) + ( (i+1) * (dl_pret*(1-proc_odciety))/Num )</l>
+<l>    gen_rectangle1 (SearchROI, Row1, Column1, Row2, Column2)</l>
+<c>    *ROI obrocone do lokalnej krzywizny</c>
+<l>    czy_obracac_ROI := true</l>
+<l>    if (czy_obracac_ROI)</l>
+<l>        intersection (SearchROI, poziom, Edge)</l>
+<l>        skeleton (Edge, Skeleton)</l>
+<l>        gen_contours_skeleton_xld (Skeleton, Edges, 1, 'filter')</l>
+<c>        </c>
+<l>        *gen_contour_region_xld (Edge, Edges, 'border')</l>
+<c>        </c>
+<l>        union_adjacent_contours_xld (Edges, UnionContours, 50, 1, 'attr_keep')</l>
+<l>        orientation_xld (UnionContours, Phi1)</l>
+<l>        Phi2 := (Phi1[0]+Phi1[1])/2</l>
+<l>        if( (Phi2 &gt; -1 or Phi2 &lt; -2 ) and (Phi2 &lt; 1 or Phi2 &gt; 2) )</l>
+<l>            Phi2 := Phi2 - 3.14/2</l>
+<l>        endif</l>
+<l>        gen_rectangle2 (SearchROI, (Row1+Row2)/2, (Column1+Column2)/2, Phi2, (Row2-Row1)/2, (Column2-Column1)/2)</l>
+<l>    endif</l>
+<l>    query_all_colors (WindowHandle, Colors)</l>
+<l>    dev_set_color (Colors[i])</l>
+<l>    dev_display (SearchROI)</l>
+<l>    intersection (SearchROI, poziom, Edge)</l>
+<l>    skeleton (Edge, Skeleton)</l>
+<l>    gen_contours_skeleton_xld (Skeleton, Edges, 1, 'filter')</l>
+<l>    union_adjacent_contours_xld (Edges, UnionContours, 50, 1, 'attr_keep')</l>
+<l>    dev_set_color ('orange')</l>
+<l>    dev_display (Edges)</l>
+<l>    dev_set_color ('red')</l>
+<l>    dev_set_line_width (2)  </l>
+<l>    select_obj (UnionContours, Wyb1, 1)</l>
+<l>    select_obj (UnionContours, Wyb2, 2)</l>
+<l>    distance_cc_min (Wyb1, Wyb2, 'fast_point_to_segment', DistanceMin)</l>
+<l>    tuple_insert (Dystanse, i, DistanceMin, Dystanse)</l>
+<c></c>
+<l>endfor</l>
+<l>    count_seconds (Seconds1)</l>
+<l>    XXXXXXX := Seconds1 - Seconds</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
